@@ -1,37 +1,28 @@
+import model from "./model.js";
 import { v4 as uuidv4 } from "uuid";
 
-export default function UsersDao(db) {
-  let { users } = db;
-
+export default function UsersDao() {
   const createUser = (user) => {
     const newUser = { ...user, _id: uuidv4() };
-    users = [...users, newUser];
-    db.users = users;
-    return newUser;
+    return model.create(newUser);
   };
-
-  const findAllUsers = () => users;
-
-  const findUserById = (userId) =>
-    users.find((user) => user._id === userId);
-
-  const findUserByUsername = (username) =>
-    users.find((user) => user.username === username);
-
+  const findAllUsers = () => model.find();
+  const findUserById = (userId) => model.findById(userId);
+  const findUserByUsername = (username) => model.findOne({ username });
   const findUserByCredentials = (username, password) =>
-    users.find(
-      (user) => user.username === username && user.password === password
-    );
-
-  const updateUser = (userId, user) => {
-    users = users.map((u) => (u._id === userId ? { ...u, ...user } : u));
-    db.users = users;
-    return users.find((u) => u._id === userId);
-  };
-
-  const deleteUser = (userId) => {
-    users = users.filter((u) => u._id !== userId);
-    db.users = users;
+    model.findOne({ username, password });
+  const updateUser = (userId, user) =>
+    model.updateOne({ _id: userId }, { $set: user });
+  const deleteUser = (userId) => model.findByIdAndDelete(userId);
+  const findUsersByRole = (role) => model.find({ role });
+  const findUsersByPartialName = (partialName) => {
+    const regex = new RegExp(partialName, "i");
+    return model.find({
+      $or: [
+        { firstName: { $regex: regex } },
+        { lastName: { $regex: regex } },
+      ],
+    });
   };
 
   return {
@@ -42,5 +33,7 @@ export default function UsersDao(db) {
     findUserByCredentials,
     updateUser,
     deleteUser,
+    findUsersByRole,
+    findUsersByPartialName,
   };
 }

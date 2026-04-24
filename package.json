@@ -16,6 +16,9 @@
   "express-session": "^1.19.0",
   
     
+  "mongoose": "^9.5.0",
+  
+    
   "uuid": "^14.0.0"
   
   },
